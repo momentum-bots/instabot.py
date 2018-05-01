@@ -5,6 +5,7 @@ import json
 import requests
 import re
 
+
 class UserInfo:
     '''
     This class try to take some user info (following, followers, etc.)
@@ -26,10 +27,10 @@ class UserInfo:
 
     def __init__(self, info_aggregator="ink361"):
         self.i_a = info_aggregator
+        self.s = requests.Session()
         self.hello()
 
     def hello(self):
-        self.s = requests.Session()
         self.s.headers.update({'User-Agent': self.user_agent})
         main = self.s.get(self.url_list[self.i_a]["main"])
         if main.status_code == 200:
@@ -37,7 +38,7 @@ class UserInfo:
         return False
 
     def get_user_id_by_login(self, user_name):
-        url_info = self.url_user_info % (user_name)
+        url_info = self.url_user_info % user_name
         info = self.s.get(url_info)
         json_info = json.loads(re.search('{"activity.+show_app', info.text, re.DOTALL).group(0)+'":""}')
         id_user = json_info['entry_data']['ProfilePage'][0]['graphql']['user']['id']
@@ -81,7 +82,6 @@ class UserInfo:
         return False
 
     def get_followers(self, limit=-1):
-        self.followers = None
         self.followers = []
         if self.user_id:
             next_url = self.url_list[self.i_a]["followers"] % self.user_id
@@ -108,7 +108,6 @@ class UserInfo:
         return False
 
     def get_following(self, limit=-1):
-        self.following = None
         self.following = []
         if self.user_id:
             next_url = self.url_list[self.i_a]["following"] % self.user_id

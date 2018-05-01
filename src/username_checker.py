@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+
 def username_checker(self):
     chooser = 0
     while len(self.user_list) > 0 and chooser < len(self.user_list):

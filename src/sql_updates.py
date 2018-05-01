@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-import sqlite3
-from datetime import datetime, time
+from datetime import datetime
+
 
 def check_and_update(self):
     """ At the Program start, i does look for the sql updates """
@@ -54,6 +54,7 @@ def check_already_liked(self, media_id):
         return 1
     return 0
 
+
 def check_already_followed(self, user_id):
     """ controls if user already followed before """
     if self.follows_db_c.execute("SELECT EXISTS(SELECT 1 FROM usernames WHERE username_id='"+
@@ -61,11 +62,13 @@ def check_already_followed(self, user_id):
         return 1
     return 0
 
+
 def insert_media(self, media_id, status):
     """ insert media to medias """
     now = datetime.now()
     self.follows_db_c.execute("INSERT INTO medias (media_id, status, datetime) VALUES('"+
-                              media_id +"','"+ status +"','"+ str(now) +"')")
+                              media_id +"', '"+ status +"', '"+ str(now) +"')")
+
 
 def insert_username(self, user_id, username):
     """ insert user_id to usernames """
@@ -88,6 +91,7 @@ def insert_unfollow_count(self, user_id=False, username=False):
     else:
         return False
 
+
 def get_usernames_first(self):
     """ Gets first element of usernames table """
     username = self.follows_db_c.execute("SELECT * FROM usernames LIMIT 1")
@@ -95,6 +99,7 @@ def get_usernames_first(self):
         return username
     else:
         return False
+
 
 def get_usernames(self):
     """ Gets usernames table """
@@ -104,6 +109,7 @@ def get_usernames(self):
     else:
         return False
 
+
 def get_username_random(self):
     """ Gets random username """
     username = self.follows_db_c.execute("SELECT * FROM usernames WHERE unfollow_count=0 ORDER BY RANDOM() LIMIT 1").fetchone()
@@ -111,6 +117,7 @@ def get_username_random(self):
         return username
     else:
         return False
+
 
 def check_and_insert_user_agent(self, user_agent):
     """ Check user agent  """

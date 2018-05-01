@@ -4,43 +4,43 @@ import time
 from .instabot import InstaBot
 from .userinfo import UserInfo
 
-#use userinfo
+# use userinfo
 ui = UserInfo()
 ui.search_user(user_name="login")
 
-#take following
+# take following
 ui.get_following()
 following = ui.following
 
-#take followers
+# take followers
 ui.get_followers()
 followers = ui.followers
 
-#favorite id list
+# favorite id list
 favorites = ['111', '222', '333']
 
-#some lists
+# some lists
 newlist = []
 endlist = []
 followerslist = []
 
-#get following id
+# get following id
 for item in following:
     newlist.append(item['id'])
 
-#get followers id
+# get followers id
 for item in followers:
     followerslist.append(item['id'])
 
-#create final list with followers
+# create final list with followers
 endlist = set.difference(set(newlist), set(favorites), set(followerslist))
 
-#create final list without followers
+# create final list without followers
 '''
 endlist = set.difference(set(newlist), set(favorites))
 '''
 
-#use instabot
+# use instabot
 bot = InstaBot('login', 'password')
 
 print('Number of unnecessary subscriptions:', len(endlist), '\n')

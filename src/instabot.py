@@ -22,6 +22,7 @@ from .sql_updates import check_and_insert_user_agent
 from fake_useragent import UserAgent
 import re
 
+
 class InstaBot:
     """
     Instagram bot v 1.2.0
@@ -152,9 +153,9 @@ class InstaBot:
                  log_mod=0,
                  proxy="",
                  user_blacklist={},
-                 tag_blacklist=[],
-                 unwanted_username_list=[],
-                 unfollow_whitelist=[]):
+                 tag_blacklist=list(),
+                 unwanted_username_list=list(),
+                 unfollow_whitelist=list()):
 
         self.database_name = database_name
         self.follows_db = sqlite3.connect(database_name, timeout=0, isolation_level=None)
@@ -259,7 +260,7 @@ class InstaBot:
     def login(self):
         log_string = 'Trying to login as %s...\n' % (self.user_login)
         self.write_log(log_string)
-        self.login_post = {
+        login_post = {
             'username': self.user_login,
             'password': self.user_password
         }
@@ -283,7 +284,7 @@ class InstaBot:
         self.s.headers.update({'X-CSRFToken': r.cookies['csrftoken']})
         time.sleep(5 * random.random())
         login = self.s.post(
-            self.url_login, data=self.login_post, allow_redirects=True)
+            self.url_login, data=login_post, allow_redirects=True)
         self.s.headers.update({'X-CSRFToken': login.cookies['csrftoken']})
         self.csrftoken = login.cookies['csrftoken']
         #ig_vw=1536; ig_pr=1.25; ig_vh=772;  ig_or=landscape-primary;
@@ -314,13 +315,13 @@ class InstaBot:
                      (self.like_counter, self.follow_counter,
                       self.unfollow_counter, self.comments_counter)
         self.write_log(log_string)
-        work_time = datetime.datetime.now() - self.bot_start
+        work_time = now_time - self.bot_start
         log_string = 'Bot work time: %s' % (work_time)
         self.write_log(log_string)
 
         try:
             logout_post = {'csrfmiddlewaretoken': self.csrftoken}
-            logout = self.s.post(self.url_logout, data=logout_post)
+            self.s.post(self.url_logout, data=logout_post)
             self.write_log("Logout success!")
             self.login_status = False
         except:
@@ -364,7 +365,8 @@ class InstaBot:
             else:
                 return 0
 
-    def get_instagram_url_from_media_id(self, media_id, url_flag=True, only_code=None):
+    @staticmethod
+    def get_instagram_url_from_media_id(media_id, url_flag=True, only_code=None):
         """ Get Media Code or Full Url from Media ID Thanks to Nikished """
         media_id = int(media_id)
         if url_flag is False: return ""
@@ -374,8 +376,10 @@ class InstaBot:
             while media_id > 0:
                 media_id, idx = divmod(media_id, 64)
                 shortened_id = alphabet[idx] + shortened_id
-            if only_code: return shortened_id
-            else: return 'instagram.com/p/' + shortened_id + '/'
+            if only_code:
+                return shortened_id
+            else:
+                return 'instagram.com/p/' + shortened_id + '/'
 
     def get_username_by_media_id(self, media_id):
         """ Get username by media ID Thanks to Nikished """
@@ -413,7 +417,7 @@ class InstaBot:
         else:
             return False
 
-    def get_userinfo_by_name(self, username):
+    def get_user_info_by_name(self, username):
         """ Get user info by name """
 
         if self.login_status:
@@ -443,13 +447,12 @@ class InstaBot:
         if self.login_status:
             if self.media_by_tag != 0:
                 i = 0
-                for d in self.media_by_tag:
+                for _ in self.media_by_tag:
                     # Media count by this tag.
                     if media_size > 0 or media_size < 0:
                         media_size -= 1
                         l_c = self.media_by_tag[i]['node']['edge_liked_by']['count']
-                        if ((l_c <= self.media_max_like and
-                             l_c >= self.media_min_like) or
+                        if ((self.media_min_like <= l_c <= self.media_max_like) or
                             (self.media_max_like == 0 and
                              l_c >= self.media_min_like) or
                             (self.media_min_like == 0 and
@@ -473,7 +476,7 @@ class InstaBot:
                                 self.write_log("Keep calm - It's already liked ;)")
                                 return False
                             try:
-                                if (len(self.media_by_tag[i]['node']['edge_media_to_caption']['edges']) > 1):
+                                if len(self.media_by_tag[i]['node']['edge_media_to_caption']['edges']) > 1:
                                     caption = self.media_by_tag[i]['node']['edge_media_to_caption'][
                                         'edges'][0]['node']['text'].encode(
                                             'ascii', errors='ignore')
@@ -589,7 +592,7 @@ class InstaBot:
         """ Send http request to comment """
         if self.login_status:
             comment_post = {'comment_text': comment_text}
-            url_comment = self.url_comment % (media_id)
+            url_comment = self.url_comment % media_id
             try:
                 comment = self.s.post(url_comment, data=comment_post)
                 if comment.status_code == 200:
@@ -605,7 +608,7 @@ class InstaBot:
     def follow(self, user_id):
         """ Send http request to follow """
         if self.login_status:
-            url_follow = self.url_follow % (user_id)
+            url_follow = self.url_follow % user_id
             try:
                 follow = self.s.post(url_follow)
                 if follow.status_code == 200:
@@ -623,7 +626,7 @@ class InstaBot:
     def unfollow(self, user_id):
         """ Send http request to unfollow """
         if self.login_status:
-            url_unfollow = self.url_unfollow % (user_id)
+            url_unfollow = self.url_unfollow % user_id
             try:
                 unfollow = self.s.post(url_unfollow)
                 if unfollow.status_code == 200:
@@ -639,7 +642,7 @@ class InstaBot:
     def unfollow_on_cleanup(self, user_id):
         """ Unfollow on cleanup by @rjmayott """
         if self.login_status:
-            url_unfollow = self.url_unfollow % (user_id)
+            url_unfollow = self.url_unfollow % user_id
             try:
                 unfollow = self.s.post(url_unfollow)
                 if unfollow.status_code == 200:
@@ -681,10 +684,8 @@ class InstaBot:
     def new_auto_mod(self):
         while True:
             now = datetime.datetime.now()
-            if (
-                    datetime.time(self.start_at_h, self.start_at_m) <= now.time()
-                    and now.time() <= datetime.time(self.end_at_h, self.end_at_m)
-            ):
+            if datetime.time(self.start_at_h, self.start_at_m) <= now.time() <= datetime.time(self.end_at_h,
+                                                                                              self.end_at_m):
                 # ------------------- Get media_id -------------------
                 if len(self.media_by_tag) == 0:
                     self.get_media_id_by_tag(random.choice(self.tag_list))
@@ -747,11 +748,11 @@ class InstaBot:
                 self.media_by_tag[0]['node']["owner"]["id"])
             self.write_log(log_string)
 
-            if self.follow(self.media_by_tag[0]['node']["owner"]["id"]) != False:
+            if self.follow(self.media_by_tag[0]['node']["owner"]["id"]) is not False:
                 self.bot_follow_list.append(
                     [self.media_by_tag[0]['node']["owner"]["id"], time.time()])
                 self.next_iteration["Follow"] = time.time() + \
-                                                self.add_time(self.follow_delay)
+                                                 self.add_time(self.follow_delay)
 
     def new_auto_mod_unfollow(self):
         if time.time() > self.next_iteration["Unfollow"] and self.unfollow_per_day != 0:
@@ -771,11 +772,12 @@ class InstaBot:
             comment_text = self.generate_comment()
             log_string = "Trying to comment: %s" % (self.media_by_tag[0]['node']['id'])
             self.write_log(log_string)
-            if self.comment(self.media_by_tag[0]['node']['id'], comment_text) != False:
+            if self.comment(self.media_by_tag[0]['node']['id'], comment_text) is not False:
                 self.next_iteration["Comments"] = time.time() + \
                                                   self.add_time(self.comments_delay)
 
-    def add_time(self, time):
+    @staticmethod
+    def add_time(time):
         """ Make some random for next iteration"""
         return time * 0.9 + time * 0.2 * random.random()
 
@@ -789,7 +791,7 @@ class InstaBot:
         return res.capitalize()
 
     def check_exisiting_comment(self, media_code):
-        url_check = self.url_media_detail % (media_code)
+        url_check = self.url_media_detail % media_code
         check_comment = self.s.get(url_check)
         if check_comment.status_code == 200:
             all_data = json.loads(check_comment.text)
@@ -841,13 +843,12 @@ class InstaBot:
             log_string = "Getting user info : %s" % current_user
             self.write_log(log_string)
             if self.login_status == 1:
-                url_tag = self.url_user_detail % (current_user)
+                url_tag = self.url_user_detail % current_user
                 try:
                     r = self.s.get(url_tag)
                     all_data = json.loads(re.search('{"activity.+show_app', r.text, re.DOTALL).group(0)+'":""}')['entry_data']['ProfilePage'][0]
 
                     user_info = all_data['graphql']['user']
-                    i = 0
                     log_string = "Checking user info.."
                     self.write_log(log_string)
 
@@ -921,7 +922,6 @@ class InstaBot:
 
     def get_media_id_recent_feed(self):
         if self.login_status:
-            now_time = datetime.datetime.now()
             log_string = "%s : Get media id on recent feed" % (self.user_login)
             self.write_log(log_string)
             if self.login_status == 1:

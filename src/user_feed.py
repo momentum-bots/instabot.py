@@ -9,13 +9,13 @@ from .user_info import get_user_info
 
 def get_media_id_user_feed(self):
     if self.login_status:
-        if self.is_by_tag != True:
+        if self.is_by_tag is not True:
             log_string = "======> Get media id by user: %s <======" % (
                 self.current_user)
-            if self.is_checked != True:
+            if self.is_checked is not True:
                 get_user_info(self, self.current_user)
-            if self.is_fake_account != True and self.is_active_user != False and self.is_selebgram != True or self.is_by_tag != False:
-                url = 'https://www.instagram.com/%s/?__a=1' % (self.current_user)
+            if self.is_fake_account is not True and self.is_active_user is not False and self.is_selebgram is not True or self.is_by_tag is not False:
+                url = 'https://www.instagram.com/%s/?__a=1' % self.current_user
         else:
             log_string = "======> Get media id by Tag <======"
             url = 'https://www.instagram.com/explore/tags/%s/?__a=1' % (
@@ -27,7 +27,7 @@ def get_media_id_user_feed(self):
                 r = self.s.get(url)
                 all_data = json.loads(r.text)
 
-                if self.is_by_tag != True:
+                if self.is_by_tag is not True:
                     self.media_by_user = list(all_data['user']['media']['nodes'])
                 else:
                     self.media_by_user = list(all_data['graphql']['hashtag']['edge_hashtag_to_media']['edges'])

@@ -4,7 +4,7 @@
 
 def new_unfollow(self, user_id, user_name):
     """ Send http request to unfollow """
-    url_unfollow = self.url_unfollow % (user_id)
+    url_unfollow = self.url_unfollow % user_id
     try:
         unfollow = self.s.post(url_unfollow)
         if unfollow.status_code == 200:

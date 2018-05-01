@@ -21,8 +21,8 @@ def follow_protocol(self):
         else:
             print('xxxxxxx user info list is empty!!! xxxxxxxxx')
             feed_scanner(self)
-        if self.is_selebgram != True and self.is_fake_account != True and self.is_active_user != False:
-            if self.is_following != True:
+        if self.is_selebgram is not True and self.is_fake_account != True and self.is_active_user != False:
+            if self.is_following is not True:
                 log = ('Trying to follow : ' + self.current_user +
                        ' with user ID :' + self.current_id)
                 self.write_log(log)
@@ -33,7 +33,7 @@ def follow_protocol(self):
                 del self.user_info_list[chooser]
         else:
             log = ('delete ' + self.user_info_list[chooser][0] +
-                  ' from user info list')
+                   ' from user info list')
             self.write_log(log)
             del self.user_info_list[chooser]
 
